@@ -3,7 +3,7 @@
 # Start values
 app_list=("kubectl=1.24.3" "kubeadm=1.24.3" "kubectl=1.24.3" )
 var_kube_version="1.24.3"
-var_kube_list=("kubectl=$var_kube_version" "kubelet=$var_kube_version" "kubeadm=$var_kube_version")
+var_kube_list=("kubectl" "kubelet" "kubeadm")
 var_docker_version="999"
 var_docker_list=("docker")
 var_containerd_version="999"
@@ -15,10 +15,14 @@ var_options=$@
 # Functions
 
 function test_kubernetes(){
-  arr_apps=("kubectl" "kubeadm" "kubelet")
-  for a in ${arr_apps[@]}
+  for value in "${var_kube_list[@]}"
+  do
+    echo "$value=$var_kube_version"
+  done
+  for a in ${var_kube_list[@]}
   do
     # echo "Looking at $a"
+    dpkg -s <package> | grep Version
     var_temp=$(which kubectl)
     var_err_code=$?
     if [[ $var_err_code -eq 0 ]]
@@ -40,7 +44,7 @@ function test_kubernetes(){
 
 # echo "** Sample script to parse arguments **"
 
-while getopts 'tic:h' opt; do
+while getopts 'tic:k:h' opt; do
   case "$opt" in
 
     i)
@@ -55,6 +59,13 @@ while getopts 'tic:h' opt; do
     c)
       arg="$OPTARG"
       # echo "Processing option 'c' with '${OPTARG}' argument"
+      ;;
+
+    k)
+      arg="$OPTARG"
+      # echo "Processing option 'c' with '${OPTARG}' argument"
+      var_kube_version=$arg
+      #var_kube_list=("kubectl=$var_kube_version" "kubelet=$var_kube_version" "kubeadm=$var_kube_version")
       ;;
    
     ?|h)
@@ -93,8 +104,5 @@ case $yn in
 	* ) echo invalid response;
 		exit 1;;
 esac
-
-
-
 
 if [[ var_test ]]; then test_kubernetes; fi
