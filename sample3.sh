@@ -61,8 +61,8 @@ function test_docker(){
       # arr_install_apps[${#arr_install_apps[@]}]="$a"
   fi
 
-  for value in "${var_docker_list[@]}"
-    var_temp=$(dpkg -s $value | grep Version | awk '{ printf $2 }' )
+  for a in "${var_docker_list[@]}"
+    var_temp=$(dpkg -s $a | grep Version | awk '{ printf $2 }' )
     var_err_code=$?
     if [[ $var_err_code -eq 0 ]]
       then
