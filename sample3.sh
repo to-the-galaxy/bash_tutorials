@@ -16,26 +16,6 @@ var_options=$@
 
 function test_kubernetes(){
 
-  docker version --format '{{.Client.Version}}'
-  var_err_code=$?
-  if [[ $var_err_code -eq 0 ]]
-    then
-      echo "[  OK  ] = docker client version $var_temp"
-    else
-      echo "$a NOT installed"
-      # arr_install_apps[${#arr_install_apps[@]}]="$a"
-  fi
-
-  docker version --format '{{.Server.Version}}'
-  var_err_code=$?
-  if [[ $var_err_code -eq 0 ]]
-    then
-      echo "[  OK  ] = docker server version $var_temp"
-    else
-      echo "$a NOT installed"
-      # arr_install_apps[${#arr_install_apps[@]}]="$a"
-  fi
-
 
   for a in ${var_docker_list[@]}
   do
@@ -60,8 +40,29 @@ function test_kubernetes(){
 
 
 function test_docker(){
-  for value in "${var_kube_list[@]}"
-  
+
+  docker version --format '{{.Client.Version}}'
+  var_err_code=$?
+  if [[ $var_err_code -eq 0 ]]
+    then
+      echo "[  OK  ] = docker client version $var_temp"
+    else
+      echo "$a NOT installed"
+      # arr_install_apps[${#arr_install_apps[@]}]="$a"
+  fi
+
+  docker version --format '{{.Server.Version}}'
+  var_err_code=$?
+  if [[ $var_err_code -eq 0 ]]
+    then
+      echo "[  OK  ] = docker server version $var_temp"
+    else
+      echo "$a NOT installed"
+      # arr_install_apps[${#arr_install_apps[@]}]="$a"
+  fi
+
+  for value in "${var_docker_list[@]}"
+    var_temp=$(dpkg -s $a | grep Version | awk '{ printf $2 }' )
     var_err_code=$?
     if [[ $var_err_code -eq 0 ]]
       then
