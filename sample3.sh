@@ -5,7 +5,7 @@ app_list=("kubectl=1.24.3" "kubeadm=1.24.3" "kubectl=1.24.3" )
 var_kube_version="1.24.3"
 var_kube_list=("kubectl" "kubelet" "kubeadm")
 var_docker_version="999"
-var_docker_list=("docker")
+var_docker_list=("docker-ce" "docker-ce-cli")
 var_containerd_version="999"
 var_containerd_list="containerd"
 var_test=false
@@ -15,19 +15,56 @@ var_options=$@
 # Functions
 
 function test_kubernetes(){
-  for value in "${var_kube_list[@]}"
-  do
-    echo "$value=$var_kube_version"
-  done
-  for a in ${var_kube_list[@]}
+
+  docker version --format '{{.Client.Version}}'
+  var_err_code=$?
+  if [[ $var_err_code -eq 0 ]]
+    then
+      echo "[  OK  ] = docker client version $var_temp"
+    else
+      echo "$a NOT installed"
+      # arr_install_apps[${#arr_install_apps[@]}]="$a"
+  fi
+
+  docker version --format '{{.Server.Version}}'
+  var_err_code=$?
+  if [[ $var_err_code -eq 0 ]]
+    then
+      echo "[  OK  ] = docker server version $var_temp"
+    else
+      echo "$a NOT installed"
+      # arr_install_apps[${#arr_install_apps[@]}]="$a"
+  fi
+
+
+  for a in ${var_docker_list[@]}
   do
     # echo "Looking at $a"
-    dpkg -s <package> | grep Version
-    var_temp=$(which kubectl)
+    var_temp=$(dpkg -s $a | grep Version | awk '{ printf $2 }' )
+    # var_temp=$(which kubectl)
     var_err_code=$?
     if [[ $var_err_code -eq 0 ]]
       then
-        echo "OK   = $a"
+        echo "[  OK  ] = $a version $var_temp"
+      else
+        echo "$a NOT installed"
+        arr_install_apps[${#arr_install_apps[@]}]="$a"
+    fi
+  done
+  echo "The following has been added to the install que list"
+  for value in "${arr_install_apps[@]}"
+  do
+    echo "* $value"
+  done
+}
+
+function test_docker(){
+  for value in "${var_kube_list[@]}"
+  
+    var_err_code=$?
+    if [[ $var_err_code -eq 0 ]]
+      then
+        echo "OK   = $a version $var_temp"
       else
         echo "$a NOT installed"
         arr_install_apps[${#arr_install_apps[@]}]="$a"
