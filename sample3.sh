@@ -14,10 +14,54 @@ var_options=$@
 
 # Functions
 
+vercomp(){
+    if [[ $1 == $2 ]]
+    then
+        return 0
+    fi
+    local IFS=.
+    local i ver1=($1) ver2=($2)
+    # fill empty fields in ver1 with zeros
+    for ((i=${#ver1[@]}; i<${#ver2[@]}; i++))
+    do
+        ver1[i]=0
+    done
+    for ((i=0; i<${#ver1[@]}; i++))
+    do
+        if [[ -z ${ver2[i]} ]]
+        then
+            # fill empty fields in ver2 with zeros
+            ver2[i]=0
+        fi
+        if ((10#${ver1[i]} > 10#${ver2[i]}))
+        then
+            return 1
+        fi
+        if ((10#${ver1[i]} < 10#${ver2[i]}))
+        then
+            return 2
+        fi
+    done
+    return 0
+}
+
+testvercomp () {
+    vercomp $1 $2
+    case $? in
+        0) op='=';;
+        1) op='>';;
+        2) op='<';;
+    esac
+    if [[ $op != $3 ]]
+    then
+        echo "FAIL: Expected '$3', Actual '$op', Arg1 '$1', Arg2 '$2'"
+    else
+        echo "Pass: '$1 $op $2'"
+    fi
+}
+
 function test_kubernetes(){
-
-
-  for a in ${var_docker_list[@]}
+  for a in ${var_kube_list[@]}
   do
     # echo "Looking at $a"
     var_temp=$(dpkg -s $a | grep Version | awk '{ printf $2 }' )
@@ -31,52 +75,50 @@ function test_kubernetes(){
         arr_install_apps[${#arr_install_apps[@]}]="$a"
     fi
   done
-  echo "The following has been added to the install que list"
-  for value in "${arr_install_apps[@]}"
-  do
-    echo "* $value"
-  done
+#   echo "The following has been added to the install que list"
+#   for value in "${arr_install_apps[@]}"
+#   do
+#     echo "* $value"
+#   done
 }
 
 
 function test_docker(){
 
-  docker version --format '{{.Client.Version}}'
+  var_temp=$(docker version --format '{{.Client.Version}}')
   var_err_code=$?
   if [[ $var_err_code -eq 0 ]]
     then
       echo "[  OK  ] = docker client version $var_temp"
     else
       echo "$a NOT installed"
-      # arr_install_apps[${#arr_install_apps[@]}]="$a"
   fi
 
-  docker version --format '{{.Server.Version}}'
+  var_temp=$(docker version --format '{{.Server.Version}}')
   var_err_code=$?
   if [[ $var_err_code -eq 0 ]]
     then
       echo "[  OK  ] = docker server version $var_temp"
     else
       echo "$a NOT installed"
-      # arr_install_apps[${#arr_install_apps[@]}]="$a"
   fi
 
-  for a in "${var_docker_list[@]}"
-    var_temp=$(dpkg -s $a | grep Version | awk '{ printf $2 }' )
-    var_err_code=$?
-    if [[ $var_err_code -eq 0 ]]
-      then
-        echo "OK   = $a version $var_temp"
-      else
-        echo "$a NOT installed"
-        arr_install_apps[${#arr_install_apps[@]}]="$a"
-    fi
-  done
-  echo "The following has been added to the install que list"
-  for value in "${arr_install_apps[@]}"
-  do
-    echo "* $value"
-  done
+  # for a in "${var_docker_list[@]}"
+  #   var_temp=$(dpkg -s $a | grep Version | awk '{ printf $2 }' )
+  #   var_err_code=$?
+  #   if [[ $var_err_code -eq 0 ]]
+  #     then
+  #       echo "OK   = $a version $var_temp"
+  #     else
+  #       echo "$a NOT installed"
+  #       arr_install_apps[${#arr_install_apps[@]}]="$a"
+  #   fi
+  # done
+  # echo "The following has been added to the install que list"
+  # for value in "${arr_install_apps[@]}"
+  # do
+  #   echo "* $value"
+  # done
 }
 
 # Parsing
@@ -145,3 +187,17 @@ case $yn in
 esac
 
 if [[ var_test ]]; then test_kubernetes; fi
+if [[ var_test ]]; then test_docker; fi
+
+# while read -r test
+# do
+#     testvercomp $test
+# done
+
+testvercomp 1.23.0 1.24.0 '<' 
+echo $? " (error code)"
+testvercomp 1.23.0 1.24.0 '>' 
+echo $? " (error code)"
+
+
+
