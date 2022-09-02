@@ -58,6 +58,7 @@ function test_kubernetes(){
   done
 }
 
+
 function test_docker(){
   for value in "${var_kube_list[@]}"
   
