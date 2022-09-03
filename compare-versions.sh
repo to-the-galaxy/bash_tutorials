@@ -51,15 +51,39 @@ testvercomp () {
 function test_a_equals_or_bigger_than_b () {
   var_a=$1
   var_b=$2
-  
-  var_temp=$(awk -F. '{ print $var_a $a }')
-  echo $var_temp
+
+  var_a="$(echo $var_a | sed "s/[^0-9]/./g")"
+  echo $var_a 
+
+  var_b="$(echo $var_b | sed "s/[^0-9]/./g")"
+  echo $var_b 
+
+  var_a_fields=$(echo $var_a | awk -F . "{ print NF }")    
+  echo $var_a_fields
+  var_fields=$var_a_fields
+
+  var_b_fields=$(echo $var_a | awk -F . "{ print NF }")    
+  echo $var_b_fields
+
+  if [[ $var_b_fields -gt $var_a_fields ]]; then var_fields=$var_b_fields; fi
+
+#  echo $var_a | awk '{for(i=1; i<=NF; i++) { print $0,i}}'
+
+  for i in $(seq 1 1 $var_fields)
+  do
+    echo "$i...$var_a"
+    k=$(echo $var_a | awk -F . -v c1=$i '{ printf $c1 }')
+    echo $k
+  done
+
+  # var_temp=$(awk -F. '{ print $var_a $a }')
+  # echo $var_temp
 }
 
-testvercomp 1.23.0 1.24.0 '<' 
-echo $? " (error code)"
-testvercomp 1.23.0 1.24.0 '>' 
-echo $? " (error code)"
+# testvercomp 1.23.0 1.24.0 '<' 
+# echo $? " (error code)"
+# testvercomp 1.23.0 1.24.0 '>' 
+# echo $? " (error code)"
 
-test_a_equals_or_bigger_than_b "1.23.0" "1.24.0"
+test_a_equals_or_bigger_than_b 1.23.0 1.24.0
 
